@@ -1,0 +1,97 @@
+public class Comandos<T> : ICommand
+    {
+
+        Action<T> _TargetExecuteMethod;
+        Func<T, bool> _TargetCanExecuteMethod;
+
+        public Comandos(Action<T> executeMethod)
+        {
+            _TargetExecuteMethod = executeMethod;
+        }
+
+        public Comandos(Action<T> executeMethod, Func<T, bool> canExecuteMethod)
+        {
+            _TargetExecuteMethod = executeMethod;
+            _TargetCanExecuteMethod = canExecuteMethod;
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CanExecuteChanged(this, EventArgs.Empty);
+        }
+
+        #region ICommand Members
+
+        bool ICommand.CanExecute(object parameter)
+        {
+
+            if (_TargetCanExecuteMethod != null)
+            {
+                T tparm = (T)parameter;
+                return _TargetCanExecuteMethod(tparm);
+            }
+
+            if (_TargetExecuteMethod != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // Beware - should use weak references if command instance lifetime is  longer than lifetime of UI objects that get hooked up to command
+
+        // Prism commands solve this in their implementation 
+
+        public event EventHandler CanExecuteChanged = delegate { };
+
+        void ICommand.Execute(object parameter)
+        {
+            if (_TargetExecuteMethod != null)
+            {
+                _TargetExecuteMethod((T)parameter);
+            }
+        }
+
+        public static implicit operator Comandos<T>(Comandos<string> v)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+    }
+	
+ public class NotifyChangeClass : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void NotifyPropertyChange(string ProperityName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(ProperityName));
+        }
+    }
+	
+	ViewModel1 : NotifyChangeClass
+	
+	
+	private int indice;
+
+        public int Indice
+        {
+            get { return indice; }
+            set { indice = value;
+                NotifyPropertyChange(nameof(errormsg));
+            }
+        }
+	
+	
+	public Comandos<string> btn_carga_excel_trx_roles { get; private set; }
+	
+	btn_carga_excel_roles_padres = new Comandos<string>
+            (
+                (s) =>
+                {
+                    
+                }
+            );
+	
